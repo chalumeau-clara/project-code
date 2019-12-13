@@ -21,10 +21,10 @@ let is_prime n =
     @param testSeq sequence of integers againt which to test
  *)
 let is_pseudo_prime p test_seq =
-  if p < 2 then invalid_arg "p plus petit que 2"
-  else
+ let rec composite i = if i*i>p then false else if (modulo p i = 0) then true  else composite (i+1) in 
     let rec pseudo = function
-    [] -> true
-      |e::l when (modulo (power e p) p) = e -> pseudo l
-      |e::l -> false
+       [] -> true
+      |e::l when mod_power p (e-1) e = 1 && composite 2 -> false
+      |e::l -> pseudo l 
     in pseudo test_seq;;
+
