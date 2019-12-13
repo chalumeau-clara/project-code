@@ -2,6 +2,7 @@
 
 open Builtin
 open Basic_arithmetics
+open Test_primes
 
 (* Initializing list of integers for eratosthenes's sieve. Naive
    version.
@@ -41,8 +42,12 @@ let eratosthenes n =
 (** Write a list into a file. Element seperator is newline.
     @param file path to write to.
  *)
-let write_list li file = ()
-
+let write_list li file = 
+  let oc = open_out file in
+  let rec aux = function
+  [] -> close_out oc
+    |e::l -> Printf.fprintf oc "%s" e; aux l
+  in aux li;;
 (** Write a list of prime numbers up to limit into a txt file.
     @param n limit of prime numbers up to which to build up a list of primes.
     @param file path to write to.
@@ -100,15 +105,6 @@ let rec last_two l = match l with
 let double_primes limit isprime =
   if limit < 2 then invalid_arg "limit plus grand que 2"
   else
-    let is_prime n =
-  if n < 2 then invalid_arg "n doit être sup à 2"
-  else
-    let rec prime d =
-      if d*d > n then true
-      else
-	if modulo n d =0 then false
-	else prime (d+1)
-    in n=2 || prime 2 in 
     let rec double = function
         i when i = limit -> []
       | i when (is_prime i) && (is_prime (2*i+1)) -> (i,2*i+1) :: double (i+1)
@@ -121,17 +117,8 @@ let double_primes limit isprime =
 let twin_primes limit isprime =
    if limit < 2 then invalid_arg "limit plus grand que 2"
    else
-     let is_prime n =
-  if n < 2 then invalid_arg "n doit être sup à 2"
-  else
-    let rec prime d =
-      if d*d > n then true
-      else
-	if modulo n d =0 then false
-	else prime (d+1)
-    in n=2 || prime 2 in 
     let rec twin = function
         i when i = limit -> []
       | i when (is_prime i) && (is_prime (2+i)) -> (i,2+i) :: twin (i+1)
       |i -> twin (i+1)
-    in twin 2;;
+    in (2,3) :: twin 2;;
