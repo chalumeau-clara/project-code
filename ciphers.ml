@@ -42,8 +42,8 @@ let decrypt_cesar k m b =
     @param p prime number
     @param q prime number
 *)
- let generate_keys_rsa p q =
-  let n = p*q in
+let generate_keys_rsa p q = (0,0),(0,0)
+ let n = p*q in
   let phi = (p-1)*(q-1) in
   let f = let rec fonction = function
     []-> 1
