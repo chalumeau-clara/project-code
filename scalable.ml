@@ -43,34 +43,8 @@ let to_int bA =
   *)
 let print_b bA =
   let rec print = function
-    []-> print_newline()
-    |e::l -> print_int(e);
-             print l
-  in
-  match bA with
-      [] -> print_int 0
-    |e::bA  -> print_int(e);
-      print bA;;
-
-
-(** Toplevel directive to use print_b as bitarray printer.
-    CAREFUL: print_b is then list int printer.
-    UNCOMMENT FOR TOPLEVEL USE.
-*)
-(* #install_printer print_b *)
-
-(** Internal comparisons on bitarrays and naturals. Naturals in this
-    context are understood as bitarrays missing a bit sign and thus
-    assumed to be non-negative.
-*)
-
-(** Comparing naturals. Output is 1 if first argument is bigger than
-    second -1 if it is smaller and 0 in case of equality.
-    @param nA A natural, a bitarray having no sign bit.
-           Assumed non-negative.
-    @param nB A natural.
- *)
-let rec compare_n nA nB = 0
+    []-> ()
+    |e::l ->let rec compare_n nA nB = 0
 
 (** Bigger inorder comparison operator on naturals. Returns true if
     first argument is bigger than second and false otherwise.
