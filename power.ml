@@ -40,10 +40,9 @@ let power x n =
     @param m modular base
  *)
 let mod_power x n m = 
-  if n < 0 then invalid_arg "n négatif"
-  else let d = n in let e = x in 
+  let d = n in let e = x in 
     let rec modpow = function
-    (x,n) when n < 2 -> if d = 0 then (if e = 0 then 0 else 1) else modulo x m
+       (x,n) when n < 2 -> if d = 0 then (if e = 0 then 0 else 1) else modulo x m
       |(x,n) when (modulo n 2) = 0 -> modpow (modulo (x*x) m ,quot n 2)
       |(x,n) -> modulo (x* (modpow (modulo (x*x) m ,quot (n-1) 2))) m
     in modpow (x,n);;

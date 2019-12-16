@@ -43,29 +43,22 @@ let decrypt_cesar k m b =
     @param q prime number
 *)
 let generate_keys_rsa p q =
-   let bezout2 a b =
-  if a = 0 || b = 0 then invalid_arg " a ou b ne doit pas être égale à 0"
-  else
-    let rec bezout r u v r1 u1 v1 =
-      match r with
-	  r when (r1 = gcd a b) -> u1
-	|r -> bezout r1 u1 v1 (r-(r/r1)*r1) (u-(r/r1)*u1) (v-(r/r1)*v1)
-    in bezout a 1 0 b 0 1 in 
  let n = p*q in
-  let phi = (p-1)*(q-1) in
-  let e = let rec fonction = function
+ let phin = (p-1)*(q-1)
+   in let e = 65537
+  in let (d,v1,gcd) = bezout e phin
+     in (n,e),(n, d);;
+
+ (*let e = let rec fonction = function
     |d when gcd phi d = 1-> d
     |d -> fonction (d+1)
-  in fonction (2)
-  in let d = bezout2 e phi 
-     in (n,e),((if d < 0 then (d + phi) else d),n);;
-
+  in fonction (2)*)
 
 (** Encryption using RSA cryptosystem.
     @param m integer hash of message
     @param pub_key a tuple (n, e) composing public key of RSA cryptosystem.
  *)
-let encrypt_rsa m (n, e) =
+let encrypt_rsa m (n, e) = 
 mod_power m e n;;
 
 
@@ -83,7 +76,7 @@ let decrypt_rsa m (n , d) =
     where p is prime and g having high enough order modulo p.
     @param p is prime having form 2*q + 1 for prime q.
 *)
-open Random ;;
+
 let rec public_data_g p =
    let g = Random.int p in 
   match p with
@@ -94,7 +87,7 @@ let rec public_data_g p =
 *)
 
 let generate_keys_g (g, p) =
-  let a = Random.int p in
+  let a = Random.int (p-1) +1 in
   let publique = mod_power g a p in (publique,a);;
 
 (** ElGamal encryption process.
@@ -103,9 +96,9 @@ let generate_keys_g (g, p) =
     @param kA ElGamal public key.
  *)
 let encrypt_g msg (g, p) kA =
-  let k = Random.int (100000000000000) in
+  let k = Random.int (p-1) +1  in
   let c1 = mod_power g k p in
-  let c2 = modulo (msg * (power kA k)) p in (c1,c2);;
+  let c2 = msg * (mod_power kA k p) in (c1,c2);;
 
 (** ElGamal decryption process.
     @param msg a tuple (msgA, msgB) forming an encrypted ElGamal message.
@@ -115,4 +108,5 @@ let encrypt_g msg (g, p) kA =
 let decrypt_g (msgA, msgB) a (g, p) =
   let x = mod_power msgA a p in
   let (u1,v1,gcd) = bezout x p in
-  let msg = modulo (u1 * msgB) p in msg;;
+  let u2 = modulo u1 p in
+  let msg = modulo (u2 * msgB) p in msg;;

@@ -24,20 +24,10 @@ let sign x =
 *)
 
 let  modulo a b =
-  if b = 0 then invalid_arg  "b positif"
-  else let c = a in 
-    let rec modu = function
-      a when (a<b) -> if a <> 0 then (if c < 0 then b-a else a) else a
-    |a -> modu (a-b)
-       in modu (if a < 0 then -a else a) ;; 
+ if a mod b < 0 then (a mod b) + b else a mod b;;
 
 let quot a b =
-  if b = 0 then invalid_arg " Division par 0"
-  else
-    let rec quo = function 
-      | a when (a < b) -> 0
-      | a -> 1 + quo (a-b)
-    in if a < 0 then (if (modulo a b) = 0 then 0 else -1) -(quo (if a < 0 then -a else a)) else quo (if a < 0 then -a else a) ;;
+    a/b -  (if (modulo a b <> 0) && (a <0)  then 1 else 0) ;;
 
 (* Integer modulo implementations. Negative case need be taken into
    account ; representant is expected non-negative. This is not OCAML
