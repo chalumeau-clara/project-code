@@ -237,46 +237,95 @@ let add_n nA nB =
     @param nA Natural.
     @param nB Natural.
 *)
-let diff_n nA nB = []
+let diff_n nA nB =
+   let rec add d = function 
+   ([],[]) ->  []
+     |(e::l, []) |([], e::l) when e = 1 -> (if d =1  then 0:: add 0 (l,[]) else 1::add 0 (l,[]))
+     |(e::l, []) |([], e::l) -> (if d =0  then 0:: add 0 (l,l) else 1::add 1 (l,l))
+     |(e::l,f::g) when (e = f && e = 0) -> (if d = 0 then 0:: add 0 (l,g) else 1:: add 1 (l,g)) 
+     |(e::l,f::g) when (e = f && e = 1) -> (if d = 1 then 1:: add 1 (l,g) else 0:: add 0 (l,g))
+     |(e::l,f::g) when e = 1 -> (if d = 1 then 0:: add 0 (l,g) else 1:: add 0 (l,g))
+     |(e::l,f::g) -> (if d = 1 then 0:: add 1 (l,g) else 1:: add 1 (l,g))
+  in add 0 (nA,nB);;
 
 (** Addition of two bitarrays.
     @param bA Bitarray.
     @param bB Bitarray.
  *)
-let add_b bA bB = []
+let add_b bA bB =
+  match (bA,bB) with
+      ([],[]) -> []
+    |((e::f, [])|([], e::f)) -> e::f
+    |(e::l,f::g) when e = f -> e :: (add_n l g )
+    |(e::l,f::g) when e = 1 -> 1:: (diff_n g l )
+    |(e::l,f::g) -> 0 :: (diff_n l g) ;;
+      
 
 (** Difference of two bitarrays.
     @param bA Bitarray.
     @param bB Bitarray.
 *)
-let diff_b bA bB = []
+let diff_b bA bB =
+  match (bA,bB) with
+      ([],[]) -> []
+    |((e::l, [])|([], e::l)) -> e::l
+    |(e::l,f::g) when (e = f && e = 1) -> 1 :: (diff_n l g )
+    |(e::l,f::g) when (e = f && e = 0) -> 0 :: (diff_n l g )
+    |(e::l,f::g) when e = 1 -> 1:: (add_n g l )
+    |(e::l,f::g) -> 0 :: (add_n l g) ;;
 
 (** Shifts bitarray to the left by a given natural number.
     @param bA Bitarray.
     @param d Non-negative integer.
 *)
-let rec shift bA d = []
+let shift bA d =
+  let rec shi bA= function
+     d when d = 0 -> bA
+    |d ->  shi (0::bA) (d-1)
+  in match bA with
+      [] -> []
+    |e::l-> e :: shi l d;;
 
 (** Multiplication of two bitarrays.
     @param bA Bitarray.
     @param bB Bitarray.
 *)
-let mult_b bA bB = []
+let mult_b bA bB =
+  let rec mult d = function
+      [] -> []
+    |e::f when e = 1 -> add_b (shift bA d) (mult (d+1) f)
+    |e::f -> mult (d+1) f
+  in mult 0 bB;;
 
 (** Quotient of two bitarrays.
     @param bA Bitarray you want to divide by second argument.
     @param bB Bitarray you divide by. Non-zero!
 *)
+let mod_b bA bB =
+  let rec mod = function
+  [] -> []
+    |e::l when (compare_d (e::l) bB = -1) -> e::l
+    |e::l -> mod (diff_d (e::l) bB) 
+  in mod bA bB;;
+ (* match (bA,bB) with
+      ([],[]) -> []
+    |((e::l, [])|([], e::l)) -> e::l
+    |(e::l,f::g) when (mod (e::l) (f::g))  
+    |(e::l,f::g) -> 0 :: (mod l g) ;;*)
+
+
+  
+
 let quot_b bA bB = []
 
 (** Modulo of a bitarray against a positive one.
     @param bA Bitarray the modulo of which you're computing.
     @param bB Bitarray which is modular base.
  *)
-let mod_b bA bB = []
+
 
 (** Integer division of two bitarrays.
     @param bA Bitarray you want to divide.
     @param bB Bitarray you wnat to divide by.
 *)
-let div_b bA bB = ([], [])
+let div_b bA bB = (quot_b bA bB, mod_b bA bB);;
