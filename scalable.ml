@@ -17,6 +17,22 @@ decomposition of a non-negative integer.
 (** Creates a bitarray from a built-in integer.
     @param x built-in integer.
 *)
+
+let inverse_n l =
+  let rec f d = function
+[] -> d
+    |e::l -> f (e::d) l
+  in f [] l;;
+
+let inverse_b l =
+  let rec f d = function
+[] -> d
+    |e::l -> f (e::d) l
+  in
+  match l with
+      [] -> []
+    |e::l -> e:: (f l);;
+
 let from_int x = if x = 0 then [] else let y = x in 
   let rec dectobin = function
   n  when n <= 0 -> []
@@ -56,13 +72,16 @@ let print_b bA =
       print_string (print "" bA) ;;
 
 let rec compare_n nA nB =
-  match (nA,nB) with
-      ([],[]) -> 0
+  let a = inverse_n nA in 
+  let b = inverse_n nB in
+  let rec comp = function 
+  ([],[]) -> 0
     |(_::_, []) -> 1
     |([], _::_) -> -1
-    |(e,f) -> ( if (to_int (0::e)) > (to_int (0::f)) then 1
-      else (if (to_int (0::e)) < (to_int (0::f)) then -1 else 0));;
-        
+    |(e::l,f::g) when e = f -> comp (l,g)
+    |(e::l,f::g) when e > f -> 1
+    |(e::l,f::g) when e < f -> -1
+  in comp (a,b);;
 
 (** Bigger inorder comparison operator on naturals. Returns true if
     first argument is bigger than second and false otherwise.
@@ -72,9 +91,7 @@ let rec compare_n nA nB =
 
 
 let (>>!) nA nB =
-   let a = to_int (0::nA) in
-  let b = to_int (0::nB) in
-  if a >  b then true else false ;;
+if compare_n nA nB = 1 then true else false;;
 
 (** Smaller inorder comparison operator on naturals. Returns true if
     first argument is smaller than second and false otherwise.
@@ -82,9 +99,7 @@ let (>>!) nA nB =
     @param nB natural.
  *)
 let (<<!) nA nB =
-  let a = to_int (0::nA) in
-  let b = to_int (0::nB) in
-  if a <  b then true else false ;;
+ if compare_n nA nB = (-1) then true else false;;
 
 (** Bigger or equal inorder comparison operator on naturals. Returns
     true if first argument is bigger or equal to second and false
@@ -93,9 +108,7 @@ let (<<!) nA nB =
     @param nB natural.
  *)
 let (>=!) nA nB =
-  let a = to_int (0::nA) in
-  let b = to_int (0::nB) in
-  if a >= b then true else false ;;
+ if compare_n nA nB = (-1) then false else true;;
 
 (** Smaller or equal inorder comparison operator on naturals. Returns
     true if first argument is smaller or equal to second and false
@@ -104,9 +117,8 @@ let (>=!) nA nB =
     @param nB natural.
  *)
 let (<=!) nA nB =
-  let a = to_int (0::nA) in
-  let b = to_int (0::nB) in
-  if a <=  b then true else false ;;
+ if compare_n nA nB = 1 then false else true;;
+
 
 (** Comparing two bitarrays. Output is 1 if first argument is bigger
     than second -1 if it smaller and 0 in case of equality.
@@ -169,12 +181,16 @@ let sign_b bA =
   match bA with
       [] -> 1
     |e::l when e = 1 -> -1
-    |e::l-> 1
+    |e::l-> 1;;
 
 (** Absolute value of bitarray.
     @param bA Bitarray.
 *)
-let abs_b bA = []
+let abs_b bA =
+   match bA with
+      [] -> []
+    |e::l when e = 1 -> 0::l
+    |e::l-> e::l;;
 
 (** Quotient of integers smaller than 4 by 2.
     @param a Built-in integer smaller than 4.
