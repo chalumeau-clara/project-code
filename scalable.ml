@@ -42,23 +42,49 @@ let to_int bA =
     @param bA a bitarray.
   *)
 let print_b bA =
-  let rec print = function
-    []-> ()
-    |e::l ->let rec compare_n nA nB = 0
+  let rec print d = function
+    []-> d
+    |e::l -> (if e = 1 then
+              print ("1"^d) l else
+      print ("0"^d) l)
+  in
+  match bA with
+      [] -> print_string  "0";
+   |e::bA when  e = 1 -> print_string "1" ;
+                           print_string (print "" bA)
+    |e::bA ->  print_string "0" ;
+      print_string (print "" bA) ;;
+
+let rec compare_n nA nB =
+  match (nA,nB) with
+      ([],[]) -> 0
+    |(_::_, []) -> 1
+    |([], _::_) -> -1
+    |(e,f) -> ( if (to_int (0::e)) > (to_int (0::f)) then 1
+      else (if (to_int (0::e)) < (to_int (0::f)) then -1 else 0));;
+        
 
 (** Bigger inorder comparison operator on naturals. Returns true if
     first argument is bigger than second and false otherwise.
     @param nA natural.
     @param nB natural.
- *)
-let (>>!) nA nB = true
+*)
+
+
+let (>>!) nA nB =
+   let a = to_int (0::nA) in
+  let b = to_int (0::nB) in
+  if a >  b then true else false ;;
 
 (** Smaller inorder comparison operator on naturals. Returns true if
     first argument is smaller than second and false otherwise.
     @param nA natural.
     @param nB natural.
  *)
-let (<<!) nA nB = true
+let (<<!) nA nB =
+  let a = to_int (0::nA) in
+  let b = to_int (0::nB) in
+  if a <  b then true else false ;;
 
 (** Bigger or equal inorder comparison operator on naturals. Returns
     true if first argument is bigger or equal to second and false
@@ -66,7 +92,10 @@ let (<<!) nA nB = true
     @param nA natural.
     @param nB natural.
  *)
-let (>=!) nA nB = true
+let (>=!) nA nB =
+  let a = to_int (0::nA) in
+  let b = to_int (0::nB) in
+  if a >= b then true else false ;;
 
 (** Smaller or equal inorder comparison operator on naturals. Returns
     true if first argument is smaller or equal to second and false
@@ -74,28 +103,42 @@ let (>=!) nA nB = true
     @param nA natural.
     @param nB natural.
  *)
-let (<=!) nA nB = true
+let (<=!) nA nB =
+  let a = to_int (0::nA) in
+  let b = to_int (0::nB) in
+  if a <=  b then true else false ;;
 
 (** Comparing two bitarrays. Output is 1 if first argument is bigger
     than second -1 if it smaller and 0 in case of equality.
     @param bA A bitarray.
     @param bB A bitarray.
 *)
-let compare_b bA bB = 0
+let compare_b bA bB =
+  match (bA,bB) with
+      ([],[]) -> 0
+    |(_::_, []) -> 1
+    |([], _::_) -> -1
+    |(e::l,f::g) -> if (<<!) l g  then -1 else (if (>>!) l g then 1 else 0);;
 
 (** Bigger inorder comparison operator on bitarrays. Returns true if
     first argument is bigger than second and false otherwise.
     @param nA natural.
     @param nB natural.
  *)
-let (<<) bA bB = true
+let (<<) bA bB =
+   let a = to_int nA in
+  let b = to_int nB in
+  if a >  b then true else false ;;
 
 (** Smaller inorder comparison operator on bitarrays. Returns true if
     first argument is smaller than second and false otherwise.
     @param nA natural.
     @param nB natural.
  *)
-let (>>) bA bB = true
+let (>>) bA bB =
+  let a = to_int nA in
+  let b = to_int nB in
+  if a >= b then true else false ;;
 
 (** Bigger or equal inorder comparison operator on bitarrays. Returns
     true if first argument is bigger or equal to second and false
@@ -103,7 +146,10 @@ let (>>) bA bB = true
     @param nA natural.
     @param nB natural.
  *)
-let (<<=) bA bB = true
+let (<<=) bA bB =
+  let a = to_int nA in
+  let b = to_int nB in
+  if a <=  b then true else false ;;
 
 (** Smaller or equal inorder comparison operator on naturals. Returns
     true if first argument is smaller or equal to second and false
@@ -111,13 +157,19 @@ let (<<=) bA bB = true
     @param nA natural.
     @param nB natural.
  *)
-let (>>=) bA bB = true
-;;
+let (>>=) bA bB =
+  let a = to_int nA in
+  let b = to_int nB in
+  if a >= b then true else false ;;
 
 (** Sign of a bitarray.
     @param bA Bitarray.
 *)
-let sign_b bA = 0
+let sign_b bA =
+  match bA with
+      [] -> 1
+    |e::l when e = 1 -> -1
+    |e::l-> 1
 
 (** Absolute value of bitarray.
     @param bA Bitarray.
