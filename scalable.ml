@@ -137,18 +137,20 @@ let rec length = function
 []-> 0
   |e::l -> 1+ length l;;
 
-let compare_b bA bB =
-   let a = inverse_b bA in 
-  let b = inverse_b bB in
-  let rec comp = function 
-  ([],[]) -> 0
+let compare_b bA bB = 
+  match (bA,bB) with
+      ([],[]) -> 0
     |(_::_, []) -> 1
     |([], _::_) -> -1
-    |(e::l,f::g) when e = f -> comp (l,g)
-    |(e::l,f::g) when e > f -> 1
-    |(e::l,f::g)  -> -1
-  in
-if (length bA) > (length bB) then 1 else (if (length bA) < (length bB) then -1 else comp(a,b));;
+    |(e::l,f::g) when (e = f && (length (e::l) > (length (f::g)))) -> 1
+    |(e::l,f::g) when (e = f && (length (e::l) < (length (f::g)))) -> -1
+    |(e::l,f::g) when (e = f && e=1) -> -1*compare_n  l g
+    |(e::l,f::g) when (e = f && e=1) -> -1*compare_n  l g
+    |(e::l,f::g) when (e = f && e=0) -> compare_n l g
+    |(e::l,f::g) when  e=1  -> -1
+    |(e::l,f::g) -> 1;;
+
+
   
 (** Bigger inorder comparison operator on bitarrays. Returns true if
     first argument is bigger than second and false otherwise.
@@ -222,12 +224,12 @@ let _div_t a = (0, 0)
 *)
 let add_n nA nB =
   let rec add d= function 
-  ([],[]) -> []
-    |(e::l, []) |([], _::_) -> e:: add 0 (l,g)
-    |(e::l,f::g) when (e = f && e = 0) -> d :: add 0 (l,g) 
-    |(e::l,f::g) when (e = f && e = 1) -> 0:: add 1 (l,g)
-    |(e::l,f::g) when e = 1 -> 1:: add 0 (l,g)
-    |(e::l,f::g)  -> 1:: add 0 (l,g)
+  ([],[]) -> if d = 1 then 1 :: [] else []
+    |(e::l, []) |([], e::l) when e = 1 -> (if d =1  then 0:: add 1 (l,l) else 1::add 0 (l,l))
+    |(e::l, []) |([], e::l) -> (if d =0  then 0:: add 1 (l,l) else 1::add 0 (l,l))
+    |(e::l,f::g) when (e = f && e = 0) -> (if d = 0 then 0:: add 0 (l,g) else 1:: add 0 (l,g)) 
+    |(e::l,f::g) when (e = f && e = 1) -> (if d = 1 then 1:: add 1 (l,g) else 0:: add 1 (l,g))
+    |(e::l,f::g) -> (if d = 1 then 0:: add 1 (l,g) else 1:: add 0 (l,g))
   in add 0 (nA,nB);;
 
 (** Difference of two naturals.
