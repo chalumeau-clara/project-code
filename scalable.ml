@@ -18,12 +18,25 @@ decomposition of a non-negative integer.
     @param x built-in integer.
 *)
 
-let inverse_n p =
+let inverse p =
   let rec f d = function
-[] -> d
-    |e::l -> f (e::p) l
+  [] -> d
+    |e::l -> f (e::d) l
   in f [] p;;
 
+let inverse_n p =
+  let a = inverse p in
+  let rec inv = function
+  [] -> []
+    |e::l when e = 0 -> inv l
+    |e::l -> e::l
+  in inv a
+
+let enzero p =
+  let a = inverse_n p in
+  inverse a;;
+
+  
 let inverse_b p =
   let rec fi d = function
   [] -> d
@@ -82,13 +95,13 @@ let rec compare_n nA nB =
   let b = inverse_n nB in
   let rec comp = function 
   ([],[]) -> 0
-    |(_::_, []) -> 1
-    |([], _::_) -> -1
+    |(e::l, []) ->  1
+    |([], e::l) ->  -1
     |(e::l,f::g) when e = f -> comp (l,g)
     |(e::l,f::g) when e > f -> 1
     |(e::l,f::g)  -> -1
   in
-  if (length nA) > (length nB) then 1 else (if (length nA) < (length nB) then -1 else comp (a,b));;
+  if (length a) > (length b) then 1  else (if (length a) < (length b) then -1 else comp (a,b));;
 
 (** Bigger inorder comparison operator on naturals. Returns true if
     first argument is bigger than second and false otherwise.
@@ -142,10 +155,10 @@ let compare_b bA bB =
       ([],[]) -> 0
     |(_::_, []) -> 1
     |([], _::_) -> -1
-    |(e::l,f::g) when (e = f && (length (e::l) > (length (f::g)))) -> 1
-    |(e::l,f::g) when (e = f && (length (e::l) < (length (f::g)))) -> -1
-    |(e::l,f::g) when (e = f && e=1) -> -1*compare_n  l g
-    |(e::l,f::g) when (e = f && e=1) -> -1*compare_n  l g
+    |(e::l,f::g) when (e = f && (length (enzero (e::l)) > (length (enzero (f::g))))) -> 1
+    |(e::l,f::g) when (e = f && (length (enzero (e::l)) < (length (enzero (f::g))))) -> -1
+    |(e::l,f::g) when (e = f && e=1) -> -1 * compare_n  l g
+    |(e::l,f::g) when (e = f && e=1) -> -1 * compare_n  l g
     |(e::l,f::g) when (e = f && e=0) -> compare_n l g
     |(e::l,f::g) when  e=1  -> -1
     |(e::l,f::g) -> 1;;
@@ -225,8 +238,8 @@ let _div_t a = (0, 0)
 let add_n nA nB =
   let rec add d= function 
   ([],[]) -> if d = 1 then 1 :: [] else []
-    |(e::l, []) |([], e::l) when e = 1 -> (if d =1  then 0:: add 1 (l,l) else 1::add 0 (l,l))
-    |(e::l, []) |([], e::l) -> (if d =0  then 0:: add 1 (l,l) else 1::add 0 (l,l))
+    |(e::l, []) |([], e::l) when e = 1 -> (if d =1  then 0:: add 1 (l,[]) else 1::add 0 (l,[]))
+    |(e::l, []) |([], e::l) -> (if d =0  then 0:: add 0 (l,[]) else 1::add 0 (l,[]))
     |(e::l,f::g) when (e = f && e = 0) -> (if d = 0 then 0:: add 0 (l,g) else 1:: add 0 (l,g)) 
     |(e::l,f::g) when (e = f && e = 1) -> (if d = 1 then 1:: add 1 (l,g) else 0:: add 1 (l,g))
     |(e::l,f::g) -> (if d = 1 then 0:: add 1 (l,g) else 1:: add 0 (l,g))
@@ -239,14 +252,14 @@ let add_n nA nB =
 *)
 let diff_n nA nB =
    let rec add d = function 
-   ([],[]) ->  []
+   ([],[]) -> []
      |(e::l, []) |([], e::l) when e = 1 -> (if d =1  then 0:: add 0 (l,[]) else 1::add 0 (l,[]))
-     |(e::l, []) |([], e::l) -> (if d =0  then 0:: add 0 (l,l) else 1::add 1 (l,l))
+     |(e::l, []) |([], e::l) -> (if d =0  then 0:: add 0 (l,[]) else 1::add 1 (l,[]))
      |(e::l,f::g) when (e = f && e = 0) -> (if d = 0 then 0:: add 0 (l,g) else 1:: add 1 (l,g)) 
      |(e::l,f::g) when (e = f && e = 1) -> (if d = 1 then 1:: add 1 (l,g) else 0:: add 0 (l,g))
      |(e::l,f::g) when e = 1 -> (if d = 1 then 0:: add 0 (l,g) else 1:: add 0 (l,g))
      |(e::l,f::g) -> (if d = 1 then 0:: add 1 (l,g) else 1:: add 1 (l,g))
-  in add 0 (nA,nB);;
+  in enzero (add 0 (nA,nB));;
 
 (** Addition of two bitarrays.
     @param bA Bitarray.
@@ -269,6 +282,7 @@ let diff_b bA bB =
   match (bA,bB) with
       ([],[]) -> []
     |((e::l, [])|([], e::l)) -> e::l
+    |(e::[],f::g) -> 1::g
     |(e::l,f::g) when (e = f && e = 1) -> 1 :: (diff_n l g )
     |(e::l,f::g) when (e = f && e = 0) -> 0 :: (diff_n l g )
     |(e::l,f::g) when e = 1 -> 1:: (add_n g l )
@@ -292,31 +306,49 @@ let shift bA d =
 *)
 let mult_b bA bB =
   let rec mult d = function
-      [] -> []
-    |e::f when e = 1 -> add_b (shift bA d) (mult (d+1) f)
-    |e::f -> mult (d+1) f
-  in mult 0 bB;;
+  ([],[]) -> []
+    |((e::f, [])|([], e::f))-> []
+    |(e::f,l::g) when l = 1 -> add_b (shift (e::f) d) (mult (d+1) (e::f,g))
+    |(e::f,l::g) -> mult (d+1) (e::f,g)
+  in match (bA,bB) with
+      ([],[]) -> []
+    |((_::_, [])|([], _::_))-> []
+    |(e::l,f::g) when (e = f && (e = 0 || e = 1)) -> mult 0 (0::l,0::g)
+    |(e::l,f::g) -> 1:: mult 0 (1::l,1::g);;
 
 (** Quotient of two bitarrays.
     @param bA Bitarray you want to divide by second argument.
     @param bB Bitarray you divide by. Non-zero!
 *)
 let mod_b bA bB =
-  let rec mod = function
-  [] -> []
-    |e::l when (compare_d (e::l) bB = -1) -> e::l
-    |e::l -> mod (diff_d (e::l) bB) 
-  in mod bA bB;;
- (* match (bA,bB) with
+  let rec modu = function
+  ([],[]) -> []
+    |(e::l, [])|([], e::l) -> l
+    |(e::l,f::g) when (compare_n (e::l) (f::g) = 0) -> []
+    |(e::l,f::g) when (compare_n (e::l) (f::g) = -1) -> l
+    |(e::l,f::g) -> modu (diff_n (e::l) (f::g),f::g)
+  in 
+  match (bA,bB) with
       ([],[]) -> []
     |((e::l, [])|([], e::l)) -> e::l
-    |(e::l,f::g) when (mod (e::l) (f::g))  
-    |(e::l,f::g) -> 0 :: (mod l g) ;;*)
+    |(e::l,f::g) when e = 1 -> 0:: (add_n  g (modu (l,g)))    
+    |(e::l,f::g) -> 0 :: (modu (l,g)) ;;
 
 
   
 
-let quot_b bA bB = []
+let quot_b bA bB =
+  let rec quot d  = function
+  ([],[]) -> d
+    |(e::l, [])|([], e::l) -> d
+    |(e::l,f::g) when (compare_n (e::l) (f::g) = -1)  -> d
+    |(e::l,f::g) -> (quot (add_n [1] d) (diff_n (e::l) (f::g),f::g))
+  in 
+  match (bA,bB) with
+      ([],[]) -> []
+    |((e::l, [])|([], e::l)) -> [1]
+    |(e::l,f::g) when (e = f && (e = 1 || e= 0))  -> 0::(quot [0] (l,g)) 
+    |(e::l,f::g) -> 1 :: (quot [0] (l,g)) ;;
 
 (** Modulo of a bitarray against a positive one.
     @param bA Bitarray the modulo of which you're computing.

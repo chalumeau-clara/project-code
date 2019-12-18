@@ -15,7 +15,7 @@ let gcd a b =
   else
     let rec euclide = function
        (a,0)-> a
-      |(a,b) -> euclide (b, modulo a b)
+      |(a,b) -> euclide (b,Builtin.modulo a b)
     in euclide ((if a < 0 then -a else a),(if b < 0 then -b else b));;
 
 (* Extended Euclidean algorithm. Computing Bezout Coefficients. *)
@@ -32,6 +32,6 @@ let bezout a b =
     let rec bezout r u v r1 u1 v1 =
       match r with
 	  r when (r1 = gcd a b) -> (u1,v1,gcd a b)
-	|r -> bezout r1 u1 v1 (r-(r/r1)*r1) (u-(r/r1)*u1) (v-(r/r1)*v1)
+	|r -> bezout r1 u1 v1 (r-(quot r r1)*r1) (u-(Builtin.quot r r1)*u1) (v-(Builtin.quot r r1)*v1)
     in bezout a 1 0 b 0 1;;
 
