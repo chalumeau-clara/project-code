@@ -153,7 +153,7 @@ let rec length = function
 let compare_b bA bB = 
   match (bA,bB) with
       ([],[]) -> 0
-    |(_::_, []) -> 1
+    |(e::_, []) -> if e = 1 then -1 else 1
     |([], _::_) -> -1
     |(e::l,f::g) when (e = f && (length (enzero (e::l)) > (length (enzero (f::g))))) -> 1
     |(e::l,f::g) when (e = f && (length (enzero (e::l)) < (length (enzero (f::g))))) -> -1
@@ -171,7 +171,7 @@ let compare_b bA bB =
     @param nB natural.
  *)
 let (<<) bA bB =
-   if compare_b bA bB = 1 then true else false;;
+  if compare_b bA bB = -1 then true else false;;
 
 (** Smaller inorder comparison operator on bitarrays. Returns true if
     first argument is smaller than second and false otherwise.
@@ -270,7 +270,7 @@ let add_b bA bB =
       ([],[]) -> []
     |((e::f, [])|([], e::f)) -> e::f
     |(e::l,f::g) when e = f -> e :: (add_n l g )
-    |(e::l,f::g) when e = 1 -> 1:: (diff_n g l )
+    |(e::l,f::g) when e = 1 -> if ((<<) (e::l) (f::g)) then 0:: (diff_n g l ) else 1:: (diff_n g l )
     |(e::l,f::g) -> 0 :: (diff_n l g) ;;
       
 
@@ -281,10 +281,11 @@ let add_b bA bB =
 let diff_b bA bB =
   match (bA,bB) with
       ([],[]) -> []
-    |((e::l, [])|([], e::l)) -> e::l
+    |(e::l, []) -> e::l
+    |([], e::l) -> 1::l
     |(e::[],f::g) -> 1::g
     |(e::l,f::g) when (e = f && e = 1) -> 1 :: (diff_n l g )
-    |(e::l,f::g) when (e = f && e = 0) -> 0 :: (diff_n l g )
+    |(e::l,f::g) when (e = f && e = 0) -> (if diff_n l g = [] then diff_n l g else  0 ::(diff_n l g ))
     |(e::l,f::g) when e = 1 -> 1:: (add_n g l )
     |(e::l,f::g) -> 0 :: (add_n l g) ;;
 
@@ -313,8 +314,8 @@ let mult_b bA bB =
   in match (bA,bB) with
       ([],[]) -> []
     |((_::_, [])|([], _::_))-> []
-    |(e::l,f::g) when (e = f && (e = 0 || e = 1)) -> mult 0 (0::l,0::g)
-    |(e::l,f::g) -> 1:: mult 0 (1::l,1::g);;
+    |(e::l,f::g) when (e = f && (e = 0 || e = 1)) -> mult 0 (0::l,g)
+    |(e::l,f::g) -> mult 0 (1::l,g);;
 
 (** Quotient of two bitarrays.
     @param bA Bitarray you want to divide by second argument.
@@ -322,17 +323,13 @@ let mult_b bA bB =
 *)
 let mod_b bA bB =
   let rec modu = function
-  ([],[]) -> []
-    |(e::l, [])|([], e::l) -> l
-    |(e::l,f::g) when (compare_n (e::l) (f::g) = 0) -> []
-    |(e::l,f::g) when (compare_n (e::l) (f::g) = -1) -> l
-    |(e::l,f::g) -> modu (diff_n (e::l) (f::g),f::g)
+     ([],[]) -> []
+    |(e::l, [])|([], e::l) -> e::l
+    |(e::l,f::g) when (compare_b (e::l) (f::g) = 0) -> []
+    |(e::l,f::g) when (compare_b (e::l) (f::g) = -1) -> e:: l
+    |(e::l,f::g) -> modu (diff_b (e::l) (f::g),f::g)
   in 
-  match (bA,bB) with
-      ([],[]) -> []
-    |((e::l, [])|([], e::l)) -> e::l
-    |(e::l,f::g) when e = 1 -> 0:: (add_n  g (modu (l,g)))    
-    |(e::l,f::g) -> 0 :: (modu (l,g)) ;;
+ if (<<) (modu (bA,bB)) [] then add_b (modu (bA,bB)) bB else modu (bA,bB);;
 
 
   
