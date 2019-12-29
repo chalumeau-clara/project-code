@@ -23,6 +23,6 @@ let bezout_b bA bB =
     let rec bezout r u v r1 u1 v1 =
       match r with
           []->([],[],[])
-	|e::l  when (Scalable.compare_b r1 (gcd_b bA bB) = 0) -> (u1,v1,gcd_b bA bB)
+	|e::l  when r1 = (gcd_b bA bB)  -> (u1,v1,gcd_b bA bB)
 	|e::l -> bezout r1 u1 v1 (Scalable.diff_b (e::l) (Scalable.mult_b (Scalable.quot_b (e::l) r1) r1)) (Scalable.diff_b u (Scalable.mult_b (Scalable.quot_b (e::l) r1) u1)) (Scalable.diff_b v (Scalable.mult_b (Scalable.quot_b (e::l) r1) v1))
     in bezout bA [0;1] [] bB [] [0;1];;

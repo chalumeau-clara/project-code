@@ -259,7 +259,7 @@ let diff_n nA nB =
      |(e::l,f::g) when (e = f && e = 1) -> (if d = 1 then 1:: add 1 (l,g) else 0:: add 0 (l,g))
      |(e::l,f::g) when e = 1 -> (if d = 1 then 0:: add 0 (l,g) else 1:: add 0 (l,g))
      |(e::l,f::g) -> (if d = 1 then 0:: add 1 (l,g) else 1:: add 1 (l,g))
-  in enzero (add 0 (nA,nB));;
+   in if (<=!) nA nB then enzero (add 0 (nB,nA)) else enzero (add 0 (nA,nB));;
 
 (** Addition of two bitarrays.
     @param bA Bitarray.
@@ -270,8 +270,7 @@ let add_b bA bB =
       ([],[]) -> []
     |((e::f, [])|([], e::f)) -> e::f
     |(e::l,f::g) when e = f -> e :: (add_n l g )
-    |(e::l,f::g) when e = 1 -> if ((<<) (e::l) (f::g)) then 0:: (diff_n g l ) else 1:: (diff_n g l )
-    |(e::l,f::g) -> 0 :: (diff_n l g) ;;
+    |(e::l,f::g) -> if ((<<) (abs_b (e::l)) (f::g)) then 0:: (diff_n g l ) else 1:: (diff_n l g )
       
 
 (** Difference of two bitarrays.
@@ -284,10 +283,10 @@ let diff_b bA bB =
     |(e::l, []) -> e::l
     |([], e::l) -> 1::l
     |(e::[],f::g) -> 1::g
-    |(e::l,f::g) when (e = f && e = 1) -> 1 :: (diff_n l g )
-    |(e::l,f::g) when (e = f && e = 0) -> (if diff_n l g = [] then diff_n l g else  0 ::(diff_n l g ))
-    |(e::l,f::g) when e = 1 -> 1:: (add_n g l )
-    |(e::l,f::g) -> 0 :: (add_n l g) ;;
+    |(e::l,f::g) when (e = f && e = 1) -> enzero ( 1 :: (diff_n l g ))
+    |(e::l,f::g) when (e = f && e = 0) -> (if (<<) (e::l) (f::g) then enzero (1:: (diff_n l g))  else enzero ( 0 ::(diff_n l g )))
+    |(e::l,f::g) when e = 1 -> enzero ( 1:: (add_n g l ))
+    |(e::l,f::g) -> enzero (0 :: (add_n l g)) ;;
 
 (** Shifts bitarray to the left by a given natural number.
     @param bA Bitarray.
@@ -321,20 +320,20 @@ let mult_b bA bB =
     @param bA Bitarray you want to divide by second argument.
     @param bB Bitarray you divide by. Non-zero!
 *)
-let mod_b bA bB =
+(*let mod_b bA bB =
   let rec modu = function
      ([],[]) -> []
     |(e::l, [])|([], e::l) -> e::l
-    |(e::l,f::g) when (compare_b (e::l) (f::g) = 0) -> []
-    |(e::l,f::g) when (compare_b (e::l) (f::g) = -1) -> e:: l
-    |(e::l,f::g) -> modu (diff_b (e::l) (f::g),f::g)
-  in 
- if (<<) (modu (bA,bB)) [] then add_b (modu (bA,bB)) bB else modu (bA,bB);;
+    |(e,f) when (compare_b e f = 0) -> []
+    |(e,f) when (compare_b e f = -1) -> e
+    |(e,f) -> modu (diff_b e f,f)
+  in
+ if (<<) bA [] then abs_b (diff_b (modu (abs_b bA,bB)) bB) else modu (bA,bB);;*)
 
 
   
 
-let quot_b bA bB =
+(*let quot_b bA bB =
   let rec quot d  = function
   ([],[]) -> d
     |(e::l, [])|([], e::l) -> d
@@ -343,9 +342,38 @@ let quot_b bA bB =
   in 
   match (bA,bB) with
       ([],[]) -> []
-    |((e::l, [])|([], e::l)) -> [1]
+    |((e::l, [])|([], e::l)) -> []
     |(e::l,f::g) when (e = f && (e = 1 || e= 0))  -> 0::(quot [0] (l,g)) 
-    |(e::l,f::g) -> 1 :: (quot [0] (l,g)) ;;
+    |(e::l,f::g) -> 1 :: (quot [0] (l,g)) ;;*)
+
+let quot_b bA bB =
+  let rec quot i j a bA bc = function
+  [] ->([],true)
+    |b when (((<<=) bA b) && ( j = [0;1] || j = [] )) -> if compare_b b bA <> 0 then (if j = [] then (a,false) else (add_b [0;1] a,false)) else (if j = [] then (add_b [0;1] a,true) else (add_b [0;0;1] a,true))
+    |b when (<<=) bA b -> quot [0;1] [] (add_b j a) (diff_b bA bc) [] (bB)
+    |b -> quot (mult_b i [0;0;1]) i a bA b (mult_b b [0;0;1])
+  in match bA with
+      [] -> []
+    |l when bB = [0;1] -> bA
+    |e::l when e = 0 -> let (r,_) = quot [0;1] [] [] bA [] bB in r
+    |l -> match (quot [0;1] [] [] (abs_b bA) [] bB) with
+	([],_) -> []
+	|(e::l,b) when b = false-> add_b (1 :: l) [1;1]
+	|(e::l,b) -> 1 :: l;;
+
+let mod_b bA bB =
+  if (bA = bB || bB = [0;1]) then [] else 
+   let rec quot i j bA bc = function
+  [] -> []
+    |b when (((<<=) bA b) && ( j = [0;1] || j = [] )) -> if bA = b then [] else  if (j = [0;1]) then diff_b bA bB else bA
+    |b when (<<=) bA b -> quot [0;1] [] (diff_b bA bc) [] (bB)
+    |b -> quot (mult_b i [0;0;1]) i bA b (mult_b b [0;0;1])
+   in  match bA with
+      [] -> []
+    |l when bB = [0;1] -> bA
+    |e::l when e = 0 -> quot [0;1] [] bA [] bB
+    |l when (quot [0;1] [] (abs_b bA) [] bB) = [] -> quot [0;1] [] (abs_b bA) [] bB
+    |l  -> add_b (mult_b (quot [0;1] [] (abs_b bA) [] bB) [1;1]) bB;;
 
 (** Modulo of a bitarray against a positive one.
     @param bA Bitarray the modulo of which you're computing.

@@ -32,6 +32,6 @@ let bezout a b =
     let rec bezout r u v r1 u1 v1 =
       match r with
 	  r when (r1 = gcd a b) -> (u1,v1,gcd a b)
-	|r -> bezout r1 u1 v1 (r-(quot r r1)*r1) (u-(Builtin.quot r r1)*u1) (v-(Builtin.quot r r1)*v1)
+	|r -> bezout r1 u1 v1 (r-(Builtin.quot r r1)*r1) (u-(Builtin.quot r r1)*u1) (v-(Builtin.quot r r1)*v1)
     in bezout a 1 0 b 0 1;;
 

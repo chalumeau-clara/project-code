@@ -39,7 +39,17 @@ let power x n =
     @param n exponent, a non-negative bitarray
     @param m modular base, a positive bitarray
  *)
-let mod_power x n m = 
+let mod_power x n m =
+  let rec powe p x n =
+ match (p,x,n) with
+    (p,x,[]) -> p
+    |(p,x,e::l) when e = 1 -> powe (Scalable.mod_b (Scalable.mult_b p x) m) ( Scalable.mod_b (Scalable.mult_b x x) m)  l
+    |(p,x,e::l) -> powe p ( Scalable.mod_b (Scalable.mult_b x x) m) l
+in match n with
+    [] -> []
+  |e::l -> powe [0;1] x l;;
+
+(*let mod_power x n m =
   let d = n in let e = x in 
     let rec modpow = function
     (_::_, []) -> [0;1]
@@ -47,7 +57,7 @@ let mod_power x n m =
       | (x,n) when (Scalable.(<<) n [0;0;1]) -> if d = [] then (if e = [] then [] else [0;1]) else Scalable.mod_b x m
       |(x,n) when (Scalable.mod_b n [0;0;1]) = [] -> modpow (Scalable.mod_b (Scalable.mult_b x x) m ,Scalable.quot_b n [0;0;1])
       |(x,n) -> Scalable.mod_b (Scalable.mult_b x (modpow (Scalable.mod_b (Scalable.mult_b x x) m ,Scalable.quot_b (Scalable.diff_b n [0;1]) [0;0;1]))) m
-    in modpow (x,n);;
+    in modpow (x,n);;*)
 
 (* Making use of Fermat Little Theorem for very quick exponentation
    modulo prime number.
