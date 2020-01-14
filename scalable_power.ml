@@ -40,13 +40,15 @@ let power x n =
     @param m modular base, a positive bitarray
  *)
 let mod_power x n m =
+  if x = [] then []
+    else
   let rec powe p x n =
  match (p,x,n) with
     (p,x,[]) -> p
     |(p,x,e::l) when e = 1 -> powe (Scalable.mod_b (Scalable.mult_b p x) m) ( Scalable.mod_b (Scalable.mult_b x x) m)  l
     |(p,x,e::l) -> powe p ( Scalable.mod_b (Scalable.mult_b x x) m) l
 in match n with
-    [] -> []
+    [] -> [0;1]
   |e::l -> powe [0;1] x l;;
 
 (*let mod_power x n m =
