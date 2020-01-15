@@ -38,29 +38,29 @@ let encode str bits =
            alphanumeric ASCII is 7.
  *)
 let decode msg bits =
-
-  let power x n =
-  let d = n in 
-    let rec power2 = function
-       (x,n) when n < 2 -> if d = 0 then 1 else x
-      |(x,n) when 2 mod n = 0 -> power2 (x*x,n/2)
-      |(x,n) -> x* power2 (x*x,(n-1)/ 2)
-    in power2 (x,n)
+  let enleve_signe = function
+  [] -> []
+    |e::l -> l in 
+ let rec pow x n =
+  match n with
+      0-> 1
+    |n -> x * pow x (n-1)
   in 
  let rec zero = function
     p when p <= 0 -> ""
         | p -> "0" ^ zero (p-1) in 
 
  let rec dectobin bits = function
-   [] -> zero bits
-    |e::l -> string_of_int e  ^ dectobin (bits-1) l  in
+ [] -> zero bits
+    |e::l -> string_of_int e  ^ dectobin (bits-1) l  in 
 
  let rec bintodec b = function
      s when ( String.length s -1) < b -> 0
-    |s when (s.[b] = '1') -> ( power 2 b) +  bintodec (b+1) s
+    |s when (s.[b] = '1') -> ( pow 2 b) +  bintodec (b+1) s
     |s  ->  bintodec (b+1) s in 
 
  let rec par7bits b n = function
      s when (String.length s -1) <=  b-> n
     |s ->  par7bits (b+7) (Char.escaped (char_of_int (bintodec 0 (String.sub s b 7))) ^ n) s 
-  in par7bits 0 "" (dectobin bits msg) ;;
+  in par7bits 0 "" (dectobin bits (enleve_signe msg)) ;;
+
